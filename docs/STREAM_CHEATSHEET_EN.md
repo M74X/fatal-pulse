@@ -1,54 +1,59 @@
-# English Live-Coding Cheat Sheet (`fatal-pulse` 90-Min Stream)
+# English Live-Coding Cheat Sheet (`fatal-pulse` Episodic Series)
 
 Keep this open on a secondary monitor next to OBS.  
-**Golden Rule:** State what you are about to build in **one clear sentence BEFORE typing**, type the block cleanly, then summarize the result in one sentence. Never improvise complex grammar mid-keystroke.
+**Golden Rule:** Each stream is a focused **40–55 minute task batch** (~80–120 lines of Rust). State what you are about to build in **one clear sentence BEFORE typing**, type the block calmly, then summarize the result in one sentence. Never improvise complex grammar mid-keystroke.
 
 ---
 
-## 1. Stream Run-of-Show (90 Minutes)
+## 1. Universal 45-Minute Episode Template
 
-- **00:00 – 08:00 | Act 0 — Hook & Architecture:** Pitch `@FatalExceptionTales`, show the ASCII data flow, run `fpulse doctor` on `stream-starter`.
-- **08:00 – 33:00 | Act 1 — SQLite Time-Series Engine:** Write `001_init.sql` (`WAL` mode) + `db.rs` inserts and `LAG()` velocity query.
-- **33:00 – 63:00 | Act 2 — Ingestion Adapters:** Implement batch YouTube Data API v3 (`X-Goog-Api-Key`), `yt-dlp` TikTok JSON parser, and `fpulse manual`.
-- **63:00 – 83:00 | Act 3 — Ratatui Live Dashboard:** Wire `VelocityRow` data into the Fatal Dark table + sparklines; poll live `@FatalExceptionTales` videos!
-- **83:00 – 90:00 | Act 4 — Ship & Q&A:** Push `v0.1.0` to GitHub, preview Phase 2 (Instagram Graph API v22+) and tease `fatal-monitor`.
+Every live episode follows the exact same low-stress rhythm:
+- **00:00 – 05:00 | Recap & Today's Task Batch:** Pitch `@FatalExceptionTales` (`20+` Shorts + `Top 10` compilations), show where we are in the ASCII diagram, and state today's single deliverable.
+- **05:00 – 22:00 | Core Implementation Part A:** Write the data structures / SQL / HTTP request path and run `cargo check`.
+- **22:00 – 37:00 | Core Implementation Part B:** Wire the CLI command or UI view and test against real `@FatalExceptionTales` videos.
+- **37:00 – 45:00 | Commit, Live Telemetry Check & Teaser:** Commit & push today's tag, inspect live `+views/hour` numbers, answer 2–3 chat questions, and tease the next episode.
 
 ---
 
-## 2. Opening Pitch (Minutes 0–5)
+## 2. Per-Episode Opening Hooks (Minutes 0–3)
 
-- *"Welcome in everyone! Today we're building `fatal-pulse` live in 90 minutes—a terminal telemetry dashboard in Rust that tracks `+views per hour` across YouTube Shorts, TikTok, and Instagram Reels."*
-- *"On `@FatalExceptionTales`, I drop hardware disaster Shorts at the exact same minute across all three platforms. Native studio apps hide real-time velocity and force you to juggle tabs—so we're building our own SQLite flight recorder."*
-- *"Think of this project as the open-source prequel to `fatal-monitor`, our upcoming Rust hardware telemetry app."*
+- **Episode 1 (SQLite Core & OpSec):**
+  *"Welcome in everyone! Today kicks off our `fatal-pulse` live-coding series in Rust. Now that `@FatalExceptionTales` has 20 Shorts and two 10-minute compilations live, we're building a terminal telemetry flight recorder—starting today with leak-proof config and our SQLite `WAL` time-series engine."*
+- **Episode 2 (YouTube Batch Adapter):**
+  *"Welcome back to `fatal-pulse` Episode 2! Last stream we locked in our SQLite `LAG()` velocity engine—today we're wiring up the YouTube Data API v3 batch adapter to pull up to 50 Shorts and compilations in a single quota unit."*
+- **Episode 3 (TikTok + Studio Retention CLI):**
+  *"Welcome to Episode 3! Today we go multi-platform: we're building an async `yt-dlp` adapter for TikTok counters plus `fpulse manual` so we can log private Studio retention like 'Stayed to watch' right inside SQLite."*
+- **Episode 4 (Ratatui Fatal Dark Dashboard — `v0.1.0`):**
+  *"Welcome to Episode 4—today is visual payoff day! We're taking every SQLite velocity row we built in Episodes 1 through 3 and rendering a live `ratatui` dashboard with sparklines to track our newest hardware disaster Short in real time."*
+- **Episode 5 (Instagram Graph API v22+ & Bridge to `fatal-monitor`):**
+  *"Welcome to Episode 5! Today we complete the three-platform triangle with Instagram Graph API v22—using the modern `views` and `reels_skip_rate` metrics—and show how these exact Rust patterns carry straight into `fatal-monitor`."*
 
 ---
 
 ## 3. Signposting Phrases (Say Before Typing)
 
-- *"Let's zoom out for ten seconds so everyone sees the full data flow."*
-- *"Before we touch a single HTTP request, let's lock down our SQLite schema."*
-- *"I'll wire up the happy path first, and then we'll harden timeouts and error handling."*
-- *"Let's compile right here and verify our assumptions before moving to the UI."*
-- *"Now comes the fun part—plugging real SQLite rows straight into `ratatui`."*
+- *"Today's scope is super focused—we only care about getting this single module rock-solid."*
+- *"Let's zoom out for ten seconds so new viewers see where today's task fits in the architecture."*
+- *"I'll wire up the happy path first, run `cargo check`, and then harden timeouts and error handling."*
+- *"Let's compile right here and verify our assumptions on real channel data before moving on."*
 
 ---
 
-## 4. Narrating SQLite & Velocity Math
+## 4. Narrating SQLite & Velocity Math (Episodes 1 & 4)
 
-- *"First thing we enable is **WAL mode**—Write-Ahead Logging—so background ingestion never blocks TUI rendering."*
-- *"Notice `slug` + `platform` is unique: `'gtx970'` ties the exact same Short together across YouTube, TikTok, and Reels."*
-- *"Instead of computing deltas in Rust loops, we let SQLite's `LAG()` window function grab the previous snapshot partitioned by `video_id`."*
-- *"Dividing the view delta by elapsed `julianday()` hours gives us accurate `+views per hour` even when polling intervals aren't exact."*
-- *"Early retention metrics like 'Stayed to watch' aren't on public endpoints in hour one, so `fpulse manual` lets us stamp them right alongside automated snapshots."*
+- *"First thing we enable is **WAL mode**—Write-Ahead Logging—so background polling never blocks TUI rendering."*
+- *"Notice `slug` + `platform` is unique: `'gtx970'` ties the exact same Short together across YouTube, TikTok, and Reels, and `format` lets us track our 10-minute 'Top 10' compilations right alongside the Shorts."*
+- *"Instead of computing deltas in messy Rust loops, we let SQLite's `LAG()` window function grab the previous snapshot partitioned by `video_id`."*
+- *"Dividing the view delta by elapsed `julianday()` hours gives us accurate `+views per hour` even when polling intervals drift."*
 
 ---
 
-## 5. Narrating APIs & Stream OpSec
+## 5. Narrating APIs & Stream OpSec (Episodes 1, 2, 3 & 5)
 
 - *"Quick OpSec rule when streaming code: we send `YOUTUBE_API_KEY` inside the `X-Goog-Api-Key` header—never in the URL query string. Even if an HTTP error prints the URL on OBS, our key never leaks."*
 - *"YouTube's `videos.list` endpoint lets us batch up to 50 video IDs in one call for a single quota unit—polling every five minutes barely uses 3% of the free daily quota."*
-- *"For TikTok in Phase 1, spawning `yt-dlp --dump-json --no-download` with a 15-second timeout gives us reliable counters without maintaining a brittle scraper."*
-- *"In Phase 2 we'll add Instagram Graph API v22—using the unified `views` and `reels_skip_rate` metrics since Meta deprecated `plays` and `impressions`."*
+- *"For TikTok, spawning `yt-dlp --dump-json --no-download` with a 15-second timeout gives us reliable public counters without maintaining a brittle scraper."*
+- *"On Instagram Graph API v22+, we query `views` and `reels_skip_rate`—never `plays` or `impressions`, which Meta deprecated in April 2025."*
 
 ---
 
@@ -58,7 +63,7 @@ When Rust or an API throws an error live, **pause, breathe, and read top-down**:
 - *"Hold on—the compiler actually caught something helpful here. Let's read the primary error message from the top."*
 - *"Classic borrow-checker catch: we're holding an immutable borrow across this call, so let's scope the statement cleanly."*
 - *"That returned `0.0 views/hour`—which makes total sense on snapshot number one because `LAG()` has no prior row to compare against yet. Watch what happens on poll number two."*
-- *"If an external endpoint throttles us mid-stream, we pass `--demo` to load our deterministic 24-hour curve and keep building the UI."*
+- *"If an external endpoint throttles us mid-stream, we pass `--demo` to load our deterministic 24-hour curve and keep moving."*
 
 ---
 
@@ -75,7 +80,7 @@ When Rust or an API throws an error live, **pause, breathe, and read top-down**:
 
 ---
 
-## 8. Closing & Call to Action (Minutes 85–90)
+## 8. Episode Sign-Off (Last 3 Minutes)
 
-- *"There it is—live cross-platform `+views/hour` telemetry running inside a single Rust binary."*
-- *"I just pushed `v0.1.0` under the MIT license—grab the repo link in the description, drop a star if you want to join Phase 2 for Instagram Graph API, and subscribe to `@FatalExceptionTales` so you don't miss `fatal-monitor`!"*
+- *"That wraps today's task batch—clean build, zero warnings, and live channel telemetry flowing into SQLite."*
+- *"I just pushed today's checkpoint to GitHub under the MIT license. Grab the link in the description, drop a star on `fatal-pulse`, and join us in the next episode where we tackle [next module]!"*

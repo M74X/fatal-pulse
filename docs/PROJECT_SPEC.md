@@ -10,7 +10,7 @@
 ## 1. Architecture Decision Record (ADR-001: Host Stack Selection)
 
 ### Context
-`fatal-pulse` will be built live on stream in **90 minutes** (100% in English) as the open-source prequel to `fatal-monitor` (a native hardware telemetry monitor built in **Rust + `egui`**). We evaluated two candidate stacks:
+`fatal-pulse` will be built live on stream in **modular 40–55 minute task-batch episodes** (100% in English), kicking off right after `@FatalExceptionTales` completes **Batch 02 (`20` Shorts + `2` Long-Form `8–10 min` "Top 10" compilations)** so every new module tracks real active launches (`Shorts #21–#50`) as the prequel to `fatal-monitor` (a native hardware telemetry monitor built in **Rust + `egui`**). We evaluated two candidate stacks:
 1. **Rust:** `ratatui` + `crossterm` + `reqwest` + `rusqlite` (`bundled`) + `clap` + `tokio`
 2. **Python 3.12+:** `textual` / `rich` + `httpx` + `sqlite3` + `typer`
 
@@ -20,14 +20,15 @@
 | :--- | :--- | :--- |
 | **Audience & Brand Authority** | **High (10/10).** Aligns directly with low-level hardware/systems engineering ethos (`r/rust`, `r/commandline`, `HN`). | **Moderate (6.5/10).** Fast to write, but perceived as a standard API script rather than systems tooling. |
 | **Code & Pattern Reuse in `fatal-monitor`** | **Direct (100%).** Time-series SQLite ring-buffers, `tokio::mpsc` collector channels, redacted config types, and crate idioms carry straight into `fatal-monitor`. | **Conceptual Only (0% code reuse).** Only SQL queries transfer. |
-| **90-Minute Live-Coding Risk** | **Low (with `stream-starter` branch).** Pre-compiled Cargo cache (`~1s` incremental builds) + synchronous `rusqlite` (`bundled`) avoids async lifetime traps on stream. | **Very Low.** Minimal boilerplate (~280 LOC), zero borrow-checker friction. |
+| **Episodic Live-Coding Risk (40–55 min/stream)** | **Very Low.** Scoping each live episode to ~80–120 LOC of focused Rust + pre-compiled Cargo cache (`~1s` incremental builds) + synchronous `rusqlite` (`bundled`) eliminates marathon fatigue and async lifetime traps. | **Very Low.** Minimal boilerplate (~280 LOC), zero borrow-checker friction. |
 | **Distribution** | Single zero-dependency static binary (`fpulse`). | Requires Python 3.12+ / `uv` runtime environment. |
 
 ### Decision
 **Selected Stack: Rust (`ratatui` + `reqwest` + `rusqlite` + `clap` + `tokio`).**  
-To guarantee a smooth 90-minute live build without compiler stalls:
+To guarantee smooth, unhurried 40–55 minute episodic live builds:
+- Split implementation into **5 self-contained task-batch episodes** (`Ep. 1` SQLite core -> `Ep. 2` YouTube batch adapter -> `Ep. 3` TikTok & Studio CLI -> `Ep. 4` Ratatui TUI `v0.1.0` -> `Ep. 5` IG Graph API v22+ & YouTube Analytics `v0.2.0`).
 - Use **`rusqlite` (`features = ["bundled"]`)** instead of compile-time `sqlx` macros.
-- Prepare a clean **`stream-starter`** branch with pre-warmed dependencies and TUI theme constants so live coding focuses strictly on SQLite time-series math, ingestion adapters, and live TUI sparkline wiring.
+- Maintain clean per-episode starter tags (`ep01-start` .. `ep05-start`) with pre-warmed dependencies so each stream focuses strictly on one well-defined engineering slice against live `@FatalExceptionTales` videos.
 
 ---
 
@@ -101,9 +102,10 @@ Configured on connection open with:
 ```sql
 CREATE TABLE IF NOT EXISTS videos (
     id            INTEGER PRIMARY KEY AUTOINCREMENT,
-    slug          TEXT NOT NULL,                          -- Cross-platform key (e.g., 'gtx970')
+    slug          TEXT NOT NULL,                          -- Cross-platform key (e.g., 'gtx970' or 'batch01_top10')
     title         TEXT NOT NULL,
     platform      TEXT NOT NULL CHECK (platform IN ('youtube', 'tiktok', 'instagram')),
+    format        TEXT NOT NULL DEFAULT 'short' CHECK (format IN ('short', 'longform')),
     external_id   TEXT NOT NULL,                          -- YT video ID, TikTok URL, or IG media ID
     published_at  TEXT NOT NULL,                          -- ISO-8601 UTC timestamp
     created_at    TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%SZ', 'now')),
@@ -169,6 +171,7 @@ with_accel AS (
 SELECT
     v.slug,
     v.platform,
+    v.format,
     v.title,
     w.views,
     w.likes,
@@ -189,21 +192,21 @@ ORDER BY v.slug, v.platform;
 
 ---
 
-## 4. Ingestion Adapter Contracts
+## 4. Ingestion Adapter Contracts (Episodic Task Batches)
 
-### Phase 1 (90-Minute Live Stream MVP)
-1. **YouTube Data API v3 (`src/ingest/youtube.rs`):**
+### Episodes 1–4 (`v0.1.0` Core Live-Stream Series)
+1. **YouTube Data API v3 (`src/ingest/youtube.rs` — Episode 2):**
    - Endpoint: `GET https://www.googleapis.com/youtube/v3/videos?part=statistics,snippet&id={ids}`
    - Auth: `X-Goog-Api-Key` request header (strictly forbidden in query parameters).
-   - Quota cost: **1 unit** per batch of up to 50 video IDs (`10,000` daily free quota).
-2. **TikTok Adapter (`src/ingest/tiktok.rs`):**
+   - Quota cost: **1 unit** per batch of up to 50 video IDs (`10,000` daily free quota) — tracks both vertical `short` releases and `8–10 min` `longform` batch compilations.
+2. **TikTok Adapter (`src/ingest/tiktok.rs` — Episode 3):**
    - Invokes `yt-dlp --dump-json --no-download --no-warnings <video_url>` via `tokio::process::Command` with a `15s` hard timeout.
    - Parses `view_count`, `like_count`, `comment_count`, `repost_count`, `save_count`.
-3. **Manual Studio Metrics CLI (`fpulse manual`):**
+3. **Manual Studio Metrics CLI (`fpulse manual` — Episode 3):**
    - Command: `fpulse manual --slug gtx970 --yt-stayed 64.2 --yt-apv 78.5 --tt-2s-drop 31.0 --tt-avg-watch 29.4`
    - Appends a snapshot preserving the latest public counters while recording private retention percentages from YouTube/TikTok Studio.
 
-### Phase 2 (Post-Stream Roadmap)
+### Episode 5 (`v0.2.0` Expansion & Bridge to `fatal-monitor`)
 1. **Instagram Graph API v22+ (`src/ingest/instagram.rs`):**
    - Endpoint: `GET https://graph.facebook.com/v22.0/{ig-media-id}/insights?metric=views,reach,likes,comments,shares,saved,ig_reels_avg_watch_time,reels_skip_rate`
    - **Deprecation Rule:** Never query `plays` or `impressions` (deprecated and removed across Meta Graph API v22+ in April 2025). Convert `ig_reels_avg_watch_time` from milliseconds to seconds.

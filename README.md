@@ -23,22 +23,23 @@ When publishing synchronized vertical videos across **YouTube Shorts**, **TikTok
 - **Language & Runtime:** Rust (`tokio` async runtime, single static binary `fpulse`)
 - **Terminal UI:** `ratatui` + `crossterm` (Fatal Dark palette: `#0D1117` obsidian, `#FF3B30` fatal crimson, `#FFD60A` neon yellow)
 - **Time-Series Storage:** `rusqlite` (`bundled`, `WAL` journal mode, zero external DB server) using SQL window functions (`LAG()`) for drift-tolerant `+views/hour` & `+views/hour²` computation
-- **Modular Ingestion Adapters:**
-  - **Phase 1 (Live-Stream MVP):**
-    - **YouTube Data API v3:** Batch `videos.list` (`<= 50` video IDs per single `1-unit` quota request, header-authenticated via `X-Goog-Api-Key`)
-    - **TikTok Public Metadata:** Subprocess adapter over `yt-dlp --dump-json --no-download`
-    - **Manual Studio Override (`fpulse manual`):** Instant CLI injection for non-public early retention metrics (`yt_stayed_to_watch`, `yt_apv`, `tt_avg_watch_sec`, `tt_2s_drop`)
-  - **Phase 2 (Post-Stream Expansion):**
-    - **Instagram Graph API v22+:** Native Reels insights (`views`, `reach`, `likes`, `comments`, `shares`, `saved`, `ig_reels_avg_watch_time`, `reels_skip_rate` — compliant with April 2025 `plays`/`impressions` deprecation)
-    - **YouTube Analytics API v2:** Automated OAuth2 daily backfill (`engagedViews`, `averageViewPercentage` filtered by `SHORTS_FEED`)
+- **Modular Ingestion Adapters (Built Across Episodic Live-Coding Streams):**
+  - **Episodes 1–4 (`v0.1.0` Core Series — Starts After Short #20):**
+    - **Episode 1 — Time-Series Core:** OBS-safe redacted config (`fpulse doctor`) + SQLite `WAL` schema & `LAG()` `+views/hour` velocity queries seeded with real Batch 01–02 telemetry.
+    - **Episode 2 — YouTube Data API v3:** Batch `videos.list` (`<= 50` video IDs per single `1-unit` quota request, header-authenticated via `X-Goog-Api-Key`).
+    - **Episode 3 — TikTok & Studio CLI:** Subprocess adapter over `yt-dlp --dump-json --no-download` + `fpulse manual` instant CLI injection for private early retention metrics (`yt_stayed_to_watch`, `yt_apv`, `tt_avg_watch_sec`, `tt_2s_drop`).
+    - **Episode 4 — Ratatui Live Dashboard:** Fatal Dark terminal tables, `+views/h` velocity deltas, and sparklines tracking live Batch 03–05 Short & Long-Form drops (`v0.1.0` tag).
+  - **Episode 5 (`v0.2.0` Expansion & Bridge to `fatal-monitor`):**
+    - **Instagram Graph API v22+:** Native Reels insights (`views`, `reach`, `likes`, `comments`, `shares`, `saved`, `ig_reels_avg_watch_time`, `reels_skip_rate` — compliant with April 2025 `plays`/`impressions` deprecation).
+    - **YouTube Analytics API v2:** Automated OAuth2 daily backfill (`engagedViews`, `averageViewPercentage` filtered by `SHORTS_FEED`).
 
 ---
 
 ## Documentation
 
 - [Technical Specification & ADR (`docs/PROJECT_SPEC.md`)](docs/PROJECT_SPEC.md) — SQLite schema, window queries, adapter contracts, and OBS live-coding security rules.
-- [14-Day Launch Roadmap (`docs/LAUNCH_ROADMAP.md`)](docs/LAUNCH_ROADMAP.md) — Sprint breakdown from specification to the 90-minute live build.
-- [Live-Coding Narration Guide (`docs/STREAM_CHEATSHEET_EN.md`)](docs/STREAM_CHEATSHEET_EN.md) — Run-of-show and technical walkthrough notes.
+- [Episodic Live-Stream Roadmap (`docs/LAUNCH_ROADMAP.md`)](docs/LAUNCH_ROADMAP.md) — Preparation sprints and 5 modular task-batch stream episodes (`40–55 min` each) running in parallel with active channel releases.
+- [Live-Coding Narration Guide (`docs/STREAM_CHEATSHEET_EN.md`)](docs/STREAM_CHEATSHEET_EN.md) — Per-episode run-of-show and natural spoken English walkthrough notes.
 
 ---
 
